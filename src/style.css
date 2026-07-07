@@ -1,0 +1,344 @@
+:root {
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #17222b;
+  background: #dfe8e9;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button {
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+button:focus-visible {
+  outline: 3px solid #2e8bd6;
+  outline-offset: 3px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+.menu-shell {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.82fr) minmax(480px, 1.18fr);
+  gap: 28px;
+  min-height: 100vh;
+  padding: 40px 48px;
+  align-items: center;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.95), transparent 32%),
+    linear-gradient(135deg, #dfe8e9 0%, #f6f1df 47%, #d5e2df 100%);
+}
+
+.menu-copy {
+  max-width: 560px;
+}
+
+.eyebrow,
+.variant-status {
+  margin: 0 0 10px;
+  color: #2f6f73;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+.menu-copy h1 {
+  margin-bottom: 18px;
+  font-size: clamp(3rem, 7vw, 6.4rem);
+  line-height: 0.9;
+  letter-spacing: 0;
+}
+
+.menu-lede {
+  max-width: 500px;
+  color: #4f626d;
+  font-size: 1.08rem;
+}
+
+.variant-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.variant-card {
+  display: flex;
+  min-height: 188px;
+  padding: 20px 22px;
+  flex-direction: column;
+  justify-content: space-between;
+  border: 1px solid rgba(23, 34, 43, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 18px 55px rgba(42, 59, 70, 0.12);
+}
+
+.variant-card h2 {
+  margin-bottom: 10px;
+  font-size: 1.7rem;
+  letter-spacing: 0;
+}
+
+.variant-card p:last-child {
+  color: #526675;
+}
+
+.is-playable {
+  background: #f8fbfa;
+  border-color: rgba(34, 125, 94, 0.45);
+}
+
+.is-locked {
+  opacity: 0.78;
+}
+
+.primary-action,
+.locked-action,
+.hud-actions button {
+  min-height: 42px;
+  padding: 0 18px;
+}
+
+.primary-action {
+  color: #fff;
+  background: #216a54;
+}
+
+.locked-action {
+  color: #687982;
+  background: #d9e1e2;
+}
+
+.game-shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  min-height: 100vh;
+  background: #cddcdd;
+}
+
+.game-stage {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+#game-canvas {
+  display: block;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.hud-panel {
+  display: flex;
+  padding: 28px;
+  flex-direction: column;
+  gap: 22px;
+  color: #f4f8f8;
+  background: #17222b;
+  border-left: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.hud-panel h1 {
+  margin: 0;
+  color: #fff;
+  font-size: 2.1rem;
+  letter-spacing: 0;
+}
+
+.hud-stat {
+  display: grid;
+  padding: 18px;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.hud-stat span,
+.hud-status {
+  color: #b8c8ce;
+}
+
+.hud-stat strong {
+  color: #fff;
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.throw-slots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.throw-slots span {
+  display: grid;
+  height: 54px;
+  place-items: center;
+  border-radius: 8px;
+  color: #b8c8ce;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.throw-slots .filled {
+  color: #17222b;
+  background: #f8d948;
+  font-weight: 800;
+}
+
+.hud-status {
+  min-height: 24px;
+  margin: 0;
+}
+
+.hud-help {
+  margin: 0;
+  color: #8fa3ab;
+  font-size: 0.86rem;
+  line-height: 1.5;
+}
+
+.impact-pop {
+  position: absolute;
+  z-index: 3;
+  transform: translate(-50%, -50%);
+  color: #17222b;
+  font-size: 1.35rem;
+  font-weight: 800;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.75);
+  pointer-events: none;
+  animation: impact-pop-rise 950ms ease-out forwards;
+}
+
+.impact-pop-score {
+  color: #216a54;
+}
+
+.impact-pop-miss {
+  color: #b3402a;
+}
+
+@keyframes impact-pop-rise {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -30%) scale(0.7);
+  }
+
+  18% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -160%) scale(1);
+  }
+}
+
+.round-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 4;
+  background: rgba(14, 22, 28, 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.round-overlay[hidden] {
+  display: none;
+}
+
+.round-overlay-card {
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  padding: 30px 44px;
+  border-radius: 12px;
+  text-align: center;
+  background: #f8fbfa;
+  box-shadow: 0 24px 70px rgba(10, 18, 24, 0.35);
+}
+
+.round-overlay-card h2 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.round-overlay-total {
+  margin: 0 0 12px;
+  color: #4f626d;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.hud-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.hud-actions button {
+  color: #17222b;
+  background: #f4f8f8;
+}
+
+.hud-actions button:first-child {
+  background: #31b67a;
+}
+
+@media (max-width: 900px) {
+  .menu-shell,
+  .game-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .menu-shell {
+    padding: 28px;
+  }
+
+  .variant-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hud-panel {
+    min-height: auto;
+    border-left: 0;
+  }
+
+  .game-stage {
+    min-height: 62vh;
+  }
+}
