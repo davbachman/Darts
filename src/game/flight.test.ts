@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computeDartFlightPoint, computeFlightDurationMs, computeProjectileFlightPoint } from './flight'
+import { computeDartFlightPoint, computeFlightDurationMs } from './flight'
 
 describe('dart flight path', () => {
   it('starts and ends exactly at the requested points', () => {
@@ -31,27 +31,5 @@ describe('dart flight path', () => {
     expect(computeFlightDurationMs(10)).toBe(260)
     expect(computeFlightDurationMs(0)).toBe(720)
     expect(computeFlightDurationMs(2)).toBeLessThan(520)
-  })
-})
-
-describe('variant projectile flight paths', () => {
-  it('keeps wizard fireballs on a straight line', () => {
-    const start = { x: -0.2, y: 0.4, z: 2 }
-    const end = { x: 0.8, y: -0.2, z: -7 }
-    const midpoint = computeProjectileFlightPoint(start, end, 0.5, 2, 'straight')
-
-    expect(midpoint.x).toBeCloseTo(0.3, 5)
-    expect(midpoint.y).toBeCloseTo(0.1, 5)
-    expect(midpoint.z).toBeCloseTo(-2.5, 5)
-  })
-
-  it('uses a taller basketball parabola than low-arc throws', () => {
-    const start = { x: 0, y: -0.6, z: 2 }
-    const end = { x: 0, y: 0, z: -7 }
-    const lowArc = computeProjectileFlightPoint(start, end, 0.5, 2, 'low-arc')
-    const tallArc = computeProjectileFlightPoint(start, end, 0.5, 2, 'tall-arc')
-
-    expect(tallArc.y).toBeGreaterThan(lowArc.y + 0.9)
-    expect(lowArc.z).toBeCloseTo(tallArc.z, 5)
   })
 })

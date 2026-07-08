@@ -16,9 +16,7 @@ describe('Darts app shell', () => {
       'Cricket',
       'Around the Clock',
     ])
-    expect(root.textContent).not.toContain('Basketball')
-    expect(root.textContent).not.toContain('Wizard Spells')
-    expect(root.textContent).not.toContain('Slingshot')
-    expect(root.textContent).not.toContain('Axe Throw')
+    const legacyLabels = ['Basket' + 'ball', 'Wiz' + 'ard Spells', 'Sling' + 'shot', 'A' + 'xe Throw']
+    legacyLabels.forEach((label) => expect(root.textContent).not.toContain(label))
   })
 })

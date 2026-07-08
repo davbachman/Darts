@@ -1,11 +1,11 @@
 import { DartsGame } from './game/darts-game'
-import { dartsGameModes, targetLabel, type DartsGameMode } from './game/dart-modes'
+import { cricketTargets, dartsGameModes, targetLabel, type DartsGameMode } from './game/dart-modes'
 import { formatDartHit } from './game/scoring'
 import { createDefaultHandProvider } from './input/hand-provider'
-import { getGameVariantConfig } from './variants/config'
-import type { VariantId } from './variants/registry'
 
 type ScreenMode = 'menu' | 'darts'
+
+const dartsInstructions = 'Pinch thumb and index to grab a dart, push toward the screen, then unpinch to throw.'
 
 export class HandThrowApp {
   private readonly root: HTMLElement
@@ -84,24 +84,24 @@ export class HandThrowApp {
   }
 
   private async startDartsMode(dartsMode: DartsGameMode): Promise<void> {
-    const variant = getGameVariantConfig('darts')
     this.mode = 'darts'
+    const modeLabel = dartsGameModes.find((mode) => mode.id === dartsMode)?.label ?? 'Darts'
     this.root.innerHTML = `
       <main class="game-shell">
         <section class="game-stage" id="game-stage">
           <div class="round-overlay" id="round-overlay" hidden>
             <div class="round-overlay-card">
-              <p class="eyebrow">${variant.label}</p>
+              <p class="eyebrow">Darts</p>
               <h2>Round complete</h2>
               <p class="round-overlay-total" id="round-overlay-total"></p>
               <button id="overlay-replay" class="primary-action" type="button">Play again</button>
             </div>
           </div>
         </section>
-        <aside class="hud-panel" aria-label="${variant.label} score">
+        <aside class="hud-panel" aria-label="Darts score">
           <div>
-            <p class="eyebrow">${variant.label}</p>
-            <h1>${dartsGameModes.find((mode) => mode.id === dartsMode)?.label ?? variant.hudTitle}</h1>
+            <p class="eyebrow">Darts</p>
+            <h1>${modeLabel}</h1>
           </div>
           <div class="hud-stat">
             <span>Score</span>
@@ -110,7 +110,7 @@ export class HandThrowApp {
           <div class="hud-mode-details" id="hud-mode-details"></div>
           <div class="throw-slots" id="hud-throws" aria-label="Throw slots"></div>
           <p class="hud-status" id="hud-status">Starting camera</p>
-          <p class="hud-help">${variant.instructions}</p>
+          <p class="hud-help">${dartsInstructions}</p>
           <div class="hud-actions">
             <button id="replay-round" type="button">Replay</button>
             <button id="back-menu" type="button">Menu</button>
@@ -135,7 +135,7 @@ export class HandThrowApp {
       throw new Error('Game stage missing')
     }
 
-    this.game = new DartsGame(stage, createDefaultHandProvider('darts' satisfies VariantId), variant, dartsMode)
+    this.game = new DartsGame(stage, createDefaultHandProvider(), dartsMode)
     this.game.render()
 
     try {
@@ -224,6 +224,30 @@ export class HandThrowApp {
   }
 
   private modeDetails(mode: NonNullable<ReturnType<DartsGame['getTextState']>['dartsMode']>): string {
+    if (mode.mode === 'cricket') {
+      const rows = cricketTargets
+        .map((target) => {
+          const label = target === 'bull' ? 'B' : String(target)
+          const playerMarks = mode.players
+            .map((player) => `<span>${this.cricketMarks(player.cricket.marks[target])}</span>`)
+            .join('')
+          return `<div class="cricket-row"><strong>${label}</strong>${playerMarks}</div>`
+        })
+        .join('')
+      const scores = mode.players
+        .map((player, index) => `<div class="${index === mode.activePlayer && mode.status === 'active' ? 'active' : ''}"><span>${player.name}</span><strong>${player.score}</strong></div>`)
+        .join('')
+
+      return `
+        <div class="cricket-board">
+          <div class="cricket-row cricket-head"><strong></strong><span>P1</span><span>P2</span></div>
+          ${rows}
+        </div>
+        <div class="player-scoreboard">${scores}</div>
+        ${mode.lastEvent ? `<p>${mode.lastEvent}</p>` : ''}
+      `
+    }
+
     const players = mode.players
       .map((player, index) => {
         const active = index === mode.activePlayer && mode.status === 'active'
@@ -238,6 +262,22 @@ export class HandThrowApp {
       .join('')
 
     return `<div class="player-scoreboard">${players}</div>${mode.lastEvent ? `<p>${mode.lastEvent}</p>` : ''}`
+  }
+
+  private cricketMarks(count: number): string {
+    if (count >= 3) {
+      return 'X'
+    }
+
+    if (count === 2) {
+      return '/'
+    }
+
+    if (count === 1) {
+      return '-'
+    }
+
+    return ''
   }
 
   private primaryScore(mode: NonNullable<ReturnType<DartsGame['getTextState']>['dartsMode']>): string {
