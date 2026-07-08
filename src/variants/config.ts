@@ -15,6 +15,7 @@ export interface GameVariantConfig {
   holdMessage: string
   instructions: string
   aimAnchor: AimAnchor
+  aimScale?: number
   projectile: ProjectileKind
   flightPath: FlightPathStyle
   target: TargetKind
@@ -31,6 +32,7 @@ export const gameVariantConfigs: Record<VariantId, GameVariantConfig> = {
     holdMessage: 'Pinch held',
     instructions: 'Pinch thumb and index to grab a dart, push toward the screen, then unpinch to throw.',
     aimAnchor: 'pinch',
+    aimScale: 2,
     projectile: 'dart',
     flightPath: 'low-arc',
     target: 'board',

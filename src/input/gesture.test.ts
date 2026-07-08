@@ -127,6 +127,35 @@ describe('hand landmark mapping', () => {
     expect(frame.aimY).toBeCloseTo((0.5 - 0.41) * 2, 2)
   })
 
+  it('supports amplified dart aiming so normal hand movement can reach doubles and misses', () => {
+    const edge = createHandFrameFromLandmarks(
+      landmarks({
+        4: { x: 0.26, y: 0.5, z: -0.03 },
+        8: { x: 0.3, y: 0.5, z: -0.03 },
+      }),
+      100,
+      1,
+      'Right',
+      'pinch',
+      2,
+    )
+    const offBoard = createHandFrameFromLandmarks(
+      landmarks({
+        4: { x: 0.16, y: 0.5, z: -0.03 },
+        8: { x: 0.2, y: 0.5, z: -0.03 },
+      }),
+      116,
+      1,
+      'Right',
+      'pinch',
+      2,
+    )
+
+    expect(edge.aimX).toBeGreaterThan(0.85)
+    expect(edge.aimX).toBeLessThan(1)
+    expect(offBoard.aimX).toBeGreaterThan(1)
+  })
+
   it('aims a fist-anchored frame from the palm center instead of the pinch midpoint', () => {
     const frame = createHandFrameFromLandmarks(
       landmarks({
@@ -261,17 +290,21 @@ describe('hand landmark mapping', () => {
     expect(targetPointing.wandTargetTilt).toBeGreaterThan(0.9)
   })
 
-  it('clamps aim to the playable board range', () => {
+  it('clamps aim to a bounded off-board range', () => {
     const frame = createHandFrameFromLandmarks(
       landmarks({
         4: { x: 0.98, y: -0.2, z: 0 },
         8: { x: 0.99, y: -0.18, z: 0 },
       }),
       100,
+      1,
+      'Right',
+      'pinch',
+      2,
     )
 
-    expect(frame.aimX).toBe(-1)
-    expect(frame.aimY).toBe(1)
+    expect(frame.aimX).toBe(-1.25)
+    expect(frame.aimY).toBe(1.25)
   })
 })
 

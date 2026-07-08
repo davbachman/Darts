@@ -84,6 +84,7 @@ const wizardReleaseTilt = 0.3
 const wizardMinimumReleaseVelocity = 2.2
 const fistTipCurlMaxRatio = 0.42
 const fistPinchMidpointMaxRatio = 0.34
+const maximumAimCoordinate = 1.25
 
 export function createHandFrameFromLandmarks(
   landmarks: HandLandmark[],
@@ -91,6 +92,7 @@ export function createHandFrameFromLandmarks(
   trackingConfidence = 1,
   handedness?: 'Left' | 'Right',
   aimAnchor: AimAnchor = 'pinch',
+  aimScale = 1,
 ): HandFrame {
   const thumbTip = landmarks[thumbTipIndex]
   const indexTip = landmarks[indexTipIndex]
@@ -121,8 +123,8 @@ export function createHandFrameFromLandmarks(
 
   return {
     timestamp,
-    aimX: clampAim((0.5 - anchorPoint.x) * 2),
-    aimY: clampAim((0.5 - anchorPoint.y) * 2),
+    aimX: clampAim((0.5 - anchorPoint.x) * 2 * aimScale),
+    aimY: clampAim((0.5 - anchorPoint.y) * 2 * aimScale),
     depth: Math.max(fingerDepth, apparentDepth),
     pinchRatio,
     trackingConfidence,
@@ -536,15 +538,15 @@ function distance3d(a: HandLandmark, b: HandLandmark): number {
 }
 
 function clampAim(value: number): number {
-  if (value >= 0.95) {
-    return 1
+  if (value >= maximumAimCoordinate) {
+    return maximumAimCoordinate
   }
 
-  if (value <= -0.95) {
-    return -1
+  if (value <= -maximumAimCoordinate) {
+    return -maximumAimCoordinate
   }
 
-  return Math.max(-1, Math.min(1, value))
+  return value
 }
 
 function clamp01(value: number): number {

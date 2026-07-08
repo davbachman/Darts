@@ -23,11 +23,13 @@ export class MediaPipeHandInputProvider implements HandInputProvider {
   private lastVideoTime = -1
   private currentFrame: HandFrame | null = null
   private readonly aimAnchor: AimAnchor
+  private readonly aimScale: number
   status: HandProviderStatus = 'idle'
   statusMessage = 'Camera idle'
 
-  constructor(aimAnchor: AimAnchor = 'pinch') {
+  constructor(aimAnchor: AimAnchor = 'pinch', aimScale = 1) {
     this.aimAnchor = aimAnchor
+    this.aimScale = aimScale
     this.video = document.createElement('video')
     this.video.playsInline = true
     this.video.muted = true
@@ -120,7 +122,7 @@ export class MediaPipeHandInputProvider implements HandInputProvider {
     const handedness = categoryName === 'Left' || categoryName === 'Right' ? categoryName : undefined
     const confidence = result.handedness[0]?.[0]?.score ?? 1
 
-    return createHandFrameFromLandmarks(landmarks, timestamp, confidence, handedness, this.aimAnchor)
+    return createHandFrameFromLandmarks(landmarks, timestamp, confidence, handedness, this.aimAnchor, this.aimScale)
   }
 }
 
@@ -239,5 +241,6 @@ export function createDefaultHandProvider(variantId: VariantId = 'darts'): HandI
     return new SyntheticHandInputProvider(variantId)
   }
 
-  return new MediaPipeHandInputProvider(getGameVariantConfig(variantId).aimAnchor)
+  const variant = getGameVariantConfig(variantId)
+  return new MediaPipeHandInputProvider(variant.aimAnchor, variant.aimScale)
 }
