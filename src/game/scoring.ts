@@ -1,5 +1,6 @@
 export {
   dartboardNumbers,
+  formatDartHit,
   formatDartScore,
   scoreDartImpact,
   scoreFor,

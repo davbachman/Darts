@@ -374,10 +374,13 @@ export class DartsGame {
     }
 
     const landed = this.activeFlight
+    let clearLandedObjectsAfterTurn = false
 
     if (!landed.recorded) {
       const score = scoreDartImpact(landed.impact)
+      const previousDartsMode = this.dartsMode
       this.dartsMode = applyDartToMode(this.dartsMode, score)
+      clearLandedObjectsAfterTurn = shouldClearLandedObjectsAfterTurn(previousDartsMode, this.dartsMode)
       this.round = this.dartsMode.mode === 'practice' ? recordDartThrow(this.round, landed.impact) : this.round
 
       if (this.variant.impact !== 'basketball') {
@@ -407,8 +410,16 @@ export class DartsGame {
       landed.mesh.removeFromParent()
     }
 
+    if (clearLandedObjectsAfterTurn) {
+      this.clearLandedObjects()
+    }
+
     this.activeFlight = null
     this.tracker.reset()
+  }
+
+  private clearLandedObjects(): void {
+    this.landedObjects.splice(0).forEach((object) => object.removeFromParent())
   }
 
   private finishBasketballImpact(flight: ActiveFlight): void {
@@ -450,6 +461,10 @@ export class DartsGame {
 export function readyPosition(aim: { x: number; y: number }, projectile: ProjectileKind, depth = 0): THREE.Vector3 {
   const yOffset = projectile === 'basketball' ? -0.28 : 0
   return new THREE.Vector3(aim.x * 1.15, aim.y * 0.82 + yOffset, readyZ - heldDepthTravel(projectile, depth))
+}
+
+export function shouldClearLandedObjectsAfterTurn(previous: DartsModeState, next: DartsModeState): boolean {
+  return previous.activePlayer !== next.activePlayer
 }
 
 function heldDepthTravel(projectile: ProjectileKind, depth: number): number {

@@ -118,6 +118,19 @@ export function formatDartScore(score: StandardDartScore): string {
   return `${prefix}${score.segment} +${score.points}`
 }
 
+export function formatDartHit(score: StandardDartScore): string {
+  if (score.area === 'miss') {
+    return 'Miss'
+  }
+
+  if (score.area === 'inner-bull' || score.area === 'outer-bull') {
+    return 'Bull'
+  }
+
+  const prefix = score.multiplier === 3 ? 'T' : score.multiplier === 2 ? 'D' : 'S'
+  return `${prefix}${score.segment}`
+}
+
 export function segmentForImpact(impact: BoardImpact): number {
   const clockwiseAngleFromTop = normalizeAngle(Math.atan2(impact.x, impact.y))
   const segmentIndex = Math.floor(((clockwiseAngleFromTop + segmentArc / 2) % (Math.PI * 2)) / segmentArc)

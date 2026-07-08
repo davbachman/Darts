@@ -5,12 +5,32 @@ import {
   heldWandTipWorldPosition,
   readyPosition,
   shouldShowReadyObject,
+  shouldClearLandedObjectsAfterTurn,
   wandTipWorldPosition,
 } from './darts-game'
+import { applyDartToMode, createDartsModeState } from './dart-modes'
+import { scoreFor } from './dartboard'
 
 describe('dartboard display scale', () => {
   it('renders the realistic dartboard larger than the normalized scoring board', () => {
     expect(dartboardVisualScale).toBeGreaterThan(1)
+  })
+})
+
+describe('turn-based board cleanup', () => {
+  it('clears landed darts after a two-player mode advances to the next player', () => {
+    let previous = createDartsModeState('cricket')
+    let next = applyDartToMode(previous, scoreFor(20, 1))
+
+    expect(shouldClearLandedObjectsAfterTurn(previous, next)).toBe(false)
+
+    previous = next
+    next = applyDartToMode(previous, scoreFor(19, 1))
+    previous = next
+    next = applyDartToMode(previous, scoreFor(18, 1))
+
+    expect(next.activePlayer).toBe(1)
+    expect(shouldClearLandedObjectsAfterTurn(previous, next)).toBe(true)
   })
 })
 

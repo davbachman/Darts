@@ -1,5 +1,6 @@
 import { DartsGame } from './game/darts-game'
 import { dartsGameModes, targetLabel, type DartsGameMode } from './game/dart-modes'
+import { formatDartHit } from './game/scoring'
 import { createDefaultHandProvider } from './input/hand-provider'
 import { getGameVariantConfig } from './variants/config'
 import type { VariantId } from './variants/registry'
@@ -191,7 +192,7 @@ export class HandThrowApp {
       const throws = state.dartsMode?.currentTurn ?? state.round.throws.map((dartThrow) => dartThrow.score)
       this.hudThrows.innerHTML = Array.from({ length: state.round.maxThrows }, (_, index) => {
         const dartThrow = throws[index]
-        return `<span class="${dartThrow ? 'filled' : ''}">${dartThrow ? dartThrow.points : '-'}</span>`
+        return `<span class="${dartThrow ? 'filled' : ''}">${dartThrow ? formatDartHit(dartThrow) : '-'}</span>`
       }).join('')
     }
 

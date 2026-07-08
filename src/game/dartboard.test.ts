@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { dartboardNumbers, formatDartScore, scoreDartImpact, scoreFor } from './dartboard'
+import { dartboardNumbers, formatDartHit, formatDartScore, scoreDartImpact, scoreFor } from './dartboard'
 
 describe('standard dartboard scoring', () => {
   it('uses the standard clock order', () => {
@@ -55,5 +55,12 @@ describe('standard dartboard scoring', () => {
     expect(formatDartScore(scoreFor(18, 2))).toBe('D18 +36')
     expect(formatDartScore(scoreDartImpact({ x: 0, y: 0 }))).toBe('Bull +50')
     expect(formatDartScore(scoreDartImpact({ x: 1.08, y: 0 }))).toBe('Miss')
+  })
+
+  it('formats compact hit labels for current-turn slots', () => {
+    expect(formatDartHit(scoreFor(20, 3))).toBe('T20')
+    expect(formatDartHit(scoreFor(15, 1))).toBe('S15')
+    expect(formatDartHit(scoreFor('bull', 1))).toBe('Bull')
+    expect(formatDartHit(scoreDartImpact({ x: 1.08, y: 0 }))).toBe('Miss')
   })
 })
