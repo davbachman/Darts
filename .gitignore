@@ -13,6 +13,7 @@ dist-ssr
 output
 .worktrees
 worktrees
+.superpowers/
 *.local
 
 # Editor directories and files
