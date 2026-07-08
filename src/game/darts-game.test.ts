@@ -1,11 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import {
+  dartboardVisualScale,
   heldAxeBladeDirection,
   heldWandTipWorldPosition,
   readyPosition,
   shouldShowReadyObject,
   wandTipWorldPosition,
 } from './darts-game'
+
+describe('dartboard display scale', () => {
+  it('renders the realistic dartboard larger than the normalized scoring board', () => {
+    expect(dartboardVisualScale).toBeGreaterThan(1)
+  })
+})
 
 describe('ready object visibility', () => {
   it('keeps a basketball visible before the shot hold gesture is recognized', () => {

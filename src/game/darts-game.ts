@@ -58,6 +58,7 @@ export interface DartsGameTextState {
 const boardZ = -7
 const readyZ = 2.2
 const boardScale = 1.55
+export const dartboardVisualScale = boardScale
 const basketballHoleRadius = 0.3
 const slingshotMarbleName = 'slingshot-marble'
 const wandTipReach = 0.88
@@ -654,6 +655,7 @@ function createHoopPost(x: number): THREE.Mesh {
 function createDartboard(): THREE.Group {
   const board = new THREE.Group()
   board.position.set(0, 0, boardZ)
+  board.scale.setScalar(dartboardVisualScale)
   const darkSingle = new THREE.MeshStandardMaterial({ color: 0x171717, roughness: 0.86 })
   const lightSingle = new THREE.MeshStandardMaterial({ color: 0xf0dfbd, roughness: 0.82 })
   const redBand = new THREE.MeshStandardMaterial({ color: 0xb72722, roughness: 0.72 })
