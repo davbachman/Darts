@@ -85,13 +85,15 @@ p {
   font-size: 1.08rem;
 }
 
-.variant-grid {
+.variant-grid,
+.mode-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(220px, 1fr));
   gap: 14px;
 }
 
-.variant-card {
+.variant-card,
+.mode-card {
   display: flex;
   min-height: 188px;
   padding: 20px 22px;
@@ -103,14 +105,21 @@ p {
   box-shadow: 0 18px 55px rgba(42, 59, 70, 0.12);
 }
 
-.variant-card h2 {
+.variant-card h2,
+.mode-card h2 {
   margin-bottom: 10px;
   font-size: 1.7rem;
   letter-spacing: 0;
 }
 
-.variant-card p:last-child {
+.variant-card p:last-child,
+.mode-card p:last-child {
   color: #526675;
+}
+
+.mode-card {
+  background: #f8fbfa;
+  border-color: rgba(34, 125, 94, 0.45);
 }
 
 .is-playable {
@@ -195,6 +204,38 @@ p {
   color: #fff;
   font-size: 3rem;
   line-height: 1;
+}
+
+.hud-mode-details {
+  display: grid;
+  gap: 10px;
+}
+
+.player-scoreboard {
+  display: grid;
+  gap: 8px;
+}
+
+.player-scoreboard div {
+  display: flex;
+  min-height: 44px;
+  padding: 0 12px;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 8px;
+  color: #b8c8ce;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.player-scoreboard .active {
+  color: #17222b;
+  background: #f8d948;
+}
+
+.hud-mode-details p {
+  margin: 0;
+  color: #8fa3ab;
+  font-size: 0.86rem;
 }
 
 .throw-slots {
@@ -329,7 +370,8 @@ p {
     padding: 28px;
   }
 
-  .variant-grid {
+  .variant-grid,
+  .mode-grid {
     grid-template-columns: 1fr;
   }
 

@@ -1,10 +1,10 @@
 import { DartsGame } from './game/darts-game'
+import { dartsGameModes, targetLabel, type DartsGameMode } from './game/dart-modes'
 import { createDefaultHandProvider } from './input/hand-provider'
-import { getMenuVariants, type VariantDefinition } from './variants/registry'
 import { getGameVariantConfig } from './variants/config'
 import type { VariantId } from './variants/registry'
 
-type ScreenMode = 'menu' | VariantId
+type ScreenMode = 'menu' | 'darts'
 
 export class HandThrowApp {
   private readonly root: HTMLElement
@@ -15,11 +15,13 @@ export class HandThrowApp {
   private hudScore: HTMLElement | null = null
   private hudStatus: HTMLElement | null = null
   private hudThrows: HTMLElement | null = null
+  private hudModeDetails: HTMLElement | null = null
   private roundOverlay: HTMLElement | null = null
   private roundOverlayTotal: HTMLElement | null = null
 
   constructor(root: HTMLElement) {
     this.root = root
+    document.title = 'Darts'
     this.renderMenu()
     this.installWindowHooks()
     window.addEventListener('resize', () => this.game?.resize())
@@ -37,61 +39,52 @@ export class HandThrowApp {
   }
 
   getTextState(): string {
-    const menuVariants = getMenuVariants()
     return JSON.stringify({
       mode: this.mode,
-      variants: menuVariants.map(({ id, label, status }) => ({ id, label, status })),
+      dartsModes: dartsGameModes.map(({ id, label, playerCount }) => ({ id, label, playerCount })),
       game: this.game?.getTextState() ?? null,
     })
   }
 
   private renderMenu(): void {
-    const menuVariants = getMenuVariants()
     this.mode = 'menu'
     this.stopGame()
     this.root.innerHTML = `
-      <main class="menu-shell">
+      <main class="menu-shell darts-menu-shell">
         <section class="menu-copy">
-          <p class="eyebrow">HandThrow</p>
-          <h1>Throw with your hand.</h1>
-          <p class="menu-lede">Choose a target game. Each mode uses your webcam hand landmarks for a distinct hold and throw gesture.</p>
+          <p class="eyebrow">Darts</p>
+          <h1>Darts</h1>
+          <p class="menu-lede">Choose a darts game, pinch a dart, push toward the screen, and release.</p>
         </section>
-        <section class="variant-grid" aria-label="Game variants">
-          ${menuVariants.map((variant) => this.variantCard(variant)).join('')}
+        <section class="mode-grid" aria-label="Darts games">
+          ${dartsGameModes.map((mode) => this.modeCard(mode)).join('')}
         </section>
       </main>
     `
 
-    menuVariants
-      .filter((variant) => variant.status === 'playable')
-      .forEach((variant) => {
-        this.root.querySelector<HTMLButtonElement>(`#play-${variant.id}`)?.addEventListener('click', () => {
-          void this.startVariant(variant.id)
-        })
+    dartsGameModes.forEach((mode) => {
+      this.root.querySelector<HTMLButtonElement>(`#play-${mode.id}`)?.addEventListener('click', () => {
+        void this.startDartsMode(mode.id)
       })
+    })
   }
 
-  private variantCard(variant: VariantDefinition): string {
-    const playable = variant.status === 'playable'
-    const button = playable
-      ? `<button id="play-${variant.id}" class="primary-action" type="button">Play</button>`
-      : `<button class="locked-action" type="button" disabled>Coming soon</button>`
-
+  private modeCard(mode: (typeof dartsGameModes)[number]): string {
     return `
-      <article class="variant-card ${playable ? 'is-playable' : 'is-locked'}">
+      <article class="mode-card">
         <div>
-          <p class="variant-status">${playable ? 'Playable now' : 'Locked'}</p>
-          <h2>${variant.label}</h2>
-          <p>${variant.description}</p>
+          <p class="variant-status">${mode.playerCount === 1 ? 'Solo' : 'Two players'}</p>
+          <h2>${mode.label}</h2>
+          <p>${mode.description}</p>
         </div>
-        ${button}
+        <button id="play-${mode.id}" class="primary-action" type="button">${mode.label}</button>
       </article>
     `
   }
 
-  private async startVariant(variantId: VariantId): Promise<void> {
-    const variant = getGameVariantConfig(variantId)
-    this.mode = variantId
+  private async startDartsMode(dartsMode: DartsGameMode): Promise<void> {
+    const variant = getGameVariantConfig('darts')
+    this.mode = 'darts'
     this.root.innerHTML = `
       <main class="game-shell">
         <section class="game-stage" id="game-stage">
@@ -107,12 +100,13 @@ export class HandThrowApp {
         <aside class="hud-panel" aria-label="${variant.label} score">
           <div>
             <p class="eyebrow">${variant.label}</p>
-            <h1>${variant.hudTitle}</h1>
+            <h1>${dartsGameModes.find((mode) => mode.id === dartsMode)?.label ?? variant.hudTitle}</h1>
           </div>
           <div class="hud-stat">
             <span>Score</span>
             <strong id="hud-score">0</strong>
           </div>
+          <div class="hud-mode-details" id="hud-mode-details"></div>
           <div class="throw-slots" id="hud-throws" aria-label="Throw slots"></div>
           <p class="hud-status" id="hud-status">Starting camera</p>
           <p class="hud-help">${variant.instructions}</p>
@@ -127,6 +121,7 @@ export class HandThrowApp {
     this.hudScore = this.root.querySelector('#hud-score')
     this.hudStatus = this.root.querySelector('#hud-status')
     this.hudThrows = this.root.querySelector('#hud-throws')
+    this.hudModeDetails = this.root.querySelector('#hud-mode-details')
     this.roundOverlay = this.root.querySelector('#round-overlay')
     this.roundOverlayTotal = this.root.querySelector('#round-overlay-total')
     this.root.querySelector<HTMLButtonElement>('#back-menu')?.addEventListener('click', () => this.renderMenu())
@@ -139,7 +134,7 @@ export class HandThrowApp {
       throw new Error('Game stage missing')
     }
 
-    this.game = new DartsGame(stage, createDefaultHandProvider(variantId), variant)
+    this.game = new DartsGame(stage, createDefaultHandProvider('darts' satisfies VariantId), variant, dartsMode)
     this.game.render()
 
     try {
@@ -185,7 +180,7 @@ export class HandThrowApp {
     }
 
     if (this.hudScore) {
-      this.hudScore.textContent = String(state.round.totalScore)
+      this.hudScore.textContent = state.dartsMode ? this.primaryScore(state.dartsMode) : String(state.round.totalScore)
     }
 
     if (this.hudStatus) {
@@ -193,18 +188,23 @@ export class HandThrowApp {
     }
 
     if (this.hudThrows) {
+      const throws = state.dartsMode?.currentTurn ?? state.round.throws.map((dartThrow) => dartThrow.score)
       this.hudThrows.innerHTML = Array.from({ length: state.round.maxThrows }, (_, index) => {
-        const dartThrow = state.round.throws[index]
-        return `<span class="${dartThrow ? 'filled' : ''}">${dartThrow ? dartThrow.score.points : '-'}</span>`
+        const dartThrow = throws[index]
+        return `<span class="${dartThrow ? 'filled' : ''}">${dartThrow ? dartThrow.points : '-'}</span>`
       }).join('')
     }
 
+    if (this.hudModeDetails && state.dartsMode) {
+      this.hudModeDetails.innerHTML = this.modeDetails(state.dartsMode)
+    }
+
     if (this.roundOverlay) {
-      const complete = state.round.status === 'complete'
+      const complete = state.dartsMode ? state.dartsMode.status === 'complete' : state.round.status === 'complete'
       this.roundOverlay.hidden = !complete
 
       if (complete && this.roundOverlayTotal) {
-        this.roundOverlayTotal.textContent = `Total ${state.round.totalScore}`
+        this.roundOverlayTotal.textContent = state.dartsMode ? this.completionText(state.dartsMode) : `Total ${state.round.totalScore}`
       }
     }
   }
@@ -220,6 +220,49 @@ export class HandThrowApp {
         this.update(stepMs, this.lastTimestamp)
       }
     }
+  }
+
+  private modeDetails(mode: NonNullable<ReturnType<DartsGame['getTextState']>['dartsMode']>): string {
+    const players = mode.players
+      .map((player, index) => {
+        const active = index === mode.activePlayer && mode.status === 'active'
+        const value =
+          mode.mode === '301'
+            ? player.remaining
+            : mode.mode === 'around-the-clock'
+              ? targetLabel(player.clockTarget)
+              : player.score
+        return `<div class="${active ? 'active' : ''}"><span>${player.name}</span><strong>${value}</strong></div>`
+      })
+      .join('')
+
+    return `<div class="player-scoreboard">${players}</div>${mode.lastEvent ? `<p>${mode.lastEvent}</p>` : ''}`
+  }
+
+  private primaryScore(mode: NonNullable<ReturnType<DartsGame['getTextState']>['dartsMode']>): string {
+    const active = mode.players[mode.activePlayer]
+
+    if (mode.mode === '301') {
+      return String(active.remaining)
+    }
+
+    if (mode.mode === 'around-the-clock') {
+      return targetLabel(active.clockTarget)
+    }
+
+    return String(active.score)
+  }
+
+  private completionText(mode: NonNullable<ReturnType<DartsGame['getTextState']>['dartsMode']>): string {
+    if (mode.winner !== null) {
+      return `${mode.players[mode.winner].name} wins`
+    }
+
+    if (mode.mode === 'practice') {
+      return `Total ${mode.players[0].score}`
+    }
+
+    return 'Game complete'
   }
 }
 

@@ -21,13 +21,7 @@ describe('variant registry', () => {
     expect(variantRegistry.filter((variant) => variant.status === 'locked')).toHaveLength(0)
   })
 
-  it('shows every playable variant in the menu now that all five are stable', () => {
-    expect(getMenuVariants().map((variant) => variant.id)).toEqual([
-      'darts',
-      'wizard-spells',
-      'basketball',
-      'slingshot',
-      'axe-throw',
-    ])
+  it('only exposes Darts in the visible menu while preserving other variant code', () => {
+    expect(getMenuVariants().map((variant) => variant.id)).toEqual(['darts'])
   })
 })

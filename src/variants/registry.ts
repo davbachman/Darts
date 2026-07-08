@@ -21,24 +21,28 @@ export const variantRegistry: VariantDefinition[] = [
     label: 'Wizard Spells',
     status: 'playable',
     description: 'Make a fist to raise the wand, then flick your thumb toward the screen to cast.',
+    visibleInMenu: false,
   },
   {
     id: 'basketball',
     label: 'Basketball',
     status: 'playable',
     description: 'Show an open hand, then push it toward the screen to shoot.',
+    visibleInMenu: false,
   },
   {
     id: 'slingshot',
     label: 'Slingshot',
     status: 'playable',
     description: 'Pinch a marble, pull back from the screen, then unpinch to release.',
+    visibleInMenu: false,
   },
   {
     id: 'axe-throw',
     label: 'Axe Throw',
     status: 'playable',
     description: 'Make a fist to hold an axe, then snap your hand open toward the screen.',
+    visibleInMenu: false,
   },
 ]
 

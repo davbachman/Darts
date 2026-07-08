@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { createDartRound, recordDartThrow, resetDartRound, type DartRoundState } from './dart-round'
+import { applyDartToMode, createDartsModeState, type DartsGameMode, type DartsModeState } from './dart-modes'
 import { applyDartLookAt, computeReadyDartRotation } from './dart-orientation'
 import { computeFlightDurationMs, computeProjectileFlightPoint, type Vec3Like } from './flight'
 import { resolveBasketballImpact, type BasketballImpactOutcome } from './basketball-impact'
@@ -9,7 +10,7 @@ import {
   slingshotMarblePouchOffset,
   updateSlingshotHoldDepthState,
 } from './slingshot-pullback'
-import { scoreDartImpact } from './scoring'
+import { dartboardNumbers, formatDartScore, scoreDartImpact } from './scoring'
 import { GameSounds } from './sound'
 import { type HandInputProvider } from '../input/hand-provider'
 import { ThrowGestureTracker, type ThrowInputSnapshot } from '../input/gesture'
@@ -42,6 +43,7 @@ export interface DartsGameTextState {
   slingshotPull: number | null
   slingshotRelaxedDepth: number | null
   round: DartRoundState
+  dartsMode: DartsModeState
   activeFlight: null | {
     progress: number
     impact: { x: number; y: number }
@@ -83,6 +85,7 @@ export class DartsGame {
   private readonly landedObjects: THREE.Group[] = []
   private readonly impactMarks: THREE.Object3D[] = []
   private round = createDartRound()
+  private dartsMode: DartsModeState
   private lastGesture: ThrowInputSnapshot = { state: 'idle', aim: { x: 0, y: 0 }, depth: 0 }
   private lastBasketballOutcome: BasketballImpactOutcome | null = null
   private slingshotRelaxedDepth: number | null = null
@@ -94,10 +97,12 @@ export class DartsGame {
     host: HTMLElement,
     provider: HandInputProvider,
     variant: GameVariantConfig = getGameVariantConfig('darts'),
+    dartsMode: DartsGameMode = 'practice',
   ) {
     this.host = host
     this.provider = provider
     this.variant = variant
+    this.dartsMode = createDartsModeState(dartsMode)
     this.tracker = new ThrowGestureTracker({ gestureKind: variant.gestureKind })
     this.readyObject = createHeldObject(variant.projectile)
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
@@ -135,7 +140,7 @@ export class DartsGame {
 
     const frame = this.provider.getFrame(timestamp)
 
-    if (frame && this.round.status === 'active' && !this.activeFlight) {
+    if (frame && this.dartsMode.status === 'active' && !this.activeFlight) {
       this.lastGesture = this.tracker.update(frame)
       this.updateHeldObject(frame.depth)
 
@@ -162,6 +167,7 @@ export class DartsGame {
 
   resetRound(): void {
     this.round = resetDartRound()
+    this.dartsMode = createDartsModeState(this.dartsMode.mode)
     this.activeFlight?.mesh.removeFromParent()
     this.activeFlight = null
     this.tracker.reset()
@@ -199,6 +205,7 @@ export class DartsGame {
           : null,
       slingshotRelaxedDepth: this.slingshotRelaxedDepth,
       round: this.round,
+      dartsMode: this.dartsMode,
       activeFlight: this.activeFlight
         ? {
             progress: Math.min(1, this.activeFlight.elapsedMs / this.activeFlight.durationMs),
@@ -368,15 +375,16 @@ export class DartsGame {
     const landed = this.activeFlight
 
     if (!landed.recorded) {
-      this.round = recordDartThrow(this.round, landed.impact)
       const score = scoreDartImpact(landed.impact)
+      this.dartsMode = applyDartToMode(this.dartsMode, score)
+      this.round = this.dartsMode.mode === 'practice' ? recordDartThrow(this.round, landed.impact) : this.round
 
       if (this.variant.impact !== 'basketball') {
         this.sounds.playImpact(this.variant.impact, score.points)
       }
 
       this.spawnImpactPopup(
-        score.points > 0 ? `${score.label} +${score.points}` : 'Miss',
+        score.points > 0 ? formatDartScore(score) : 'Miss',
         score.points > 0 ? 'score' : 'miss',
         landed.end,
       )
@@ -646,30 +654,103 @@ function createHoopPost(x: number): THREE.Mesh {
 function createDartboard(): THREE.Group {
   const board = new THREE.Group()
   board.position.set(0, 0, boardZ)
-  const ringSpecs = [
-    { radius: 1.55, color: 0xf4f7f5 },
-    { radius: 1.22, color: 0x1f3c4a },
-    { radius: 0.92, color: 0xf16b44 },
-    { radius: 0.5, color: 0xf8d948 },
-    { radius: 0.18, color: 0x31b67a },
-  ]
+  const darkSingle = new THREE.MeshStandardMaterial({ color: 0x171717, roughness: 0.86 })
+  const lightSingle = new THREE.MeshStandardMaterial({ color: 0xf0dfbd, roughness: 0.82 })
+  const redBand = new THREE.MeshStandardMaterial({ color: 0xb72722, roughness: 0.72 })
+  const greenBand = new THREE.MeshStandardMaterial({ color: 0x157342, roughness: 0.72 })
+  const wire = new THREE.MeshStandardMaterial({ color: 0xd8dde0, roughness: 0.32, metalness: 0.65 })
+  const rimMaterial = new THREE.MeshStandardMaterial({ color: 0x101820, roughness: 0.48 })
+  const sectorArc = (Math.PI * 2) / dartboardNumbers.length
 
-  for (const spec of ringSpecs) {
-    const ring = new THREE.Mesh(
-      new THREE.CylinderGeometry(spec.radius, spec.radius, 0.09, 96),
-      new THREE.MeshStandardMaterial({ color: spec.color, roughness: 0.62, metalness: 0.02 }),
-    )
-    ring.rotation.x = Math.PI / 2
-    ring.position.z = (1.6 - spec.radius) * 0.012
+  const back = new THREE.Mesh(
+    new THREE.CircleGeometry(1.28, 160),
+    new THREE.MeshStandardMaterial({ color: 0x111820, roughness: 0.65 }),
+  )
+  back.position.z = -0.035
+  board.add(back)
+
+  dartboardNumbers.forEach((number, index) => {
+    const center = Math.PI / 2 - index * sectorArc
+    const start = center - sectorArc / 2
+    const end = center + sectorArc / 2
+    const singleMaterial = index % 2 === 0 ? darkSingle : lightSingle
+    const bandMaterial = index % 2 === 0 ? redBand : greenBand
+
+    board.add(createBoardSector(0.14, 0.52, start, end, singleMaterial, 0.002))
+    board.add(createBoardSector(0.52, 0.62, start, end, bandMaterial, 0.008))
+    board.add(createBoardSector(0.62, 0.9, start, end, singleMaterial, 0.004))
+    board.add(createBoardSector(0.9, 1, start, end, bandMaterial, 0.01))
+
+    const label = createNumberLabel(number)
+    label.position.set(Math.cos(center) * 1.14, Math.sin(center) * 1.14, 0.06)
+    board.add(label)
+  })
+
+  ;[0.14, 0.52, 0.62, 0.9, 1].forEach((radius) => {
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, 0.006, 8, 160), wire)
+    ring.position.z = 0.035
     board.add(ring)
+  })
+
+  dartboardNumbers.forEach((_, index) => {
+    const angle = Math.PI / 2 - (index - 0.5) * sectorArc
+    const separator = new THREE.Mesh(
+      new THREE.BoxGeometry(0.006, 0.86, 0.01),
+      wire,
+    )
+    separator.position.set(Math.cos(angle) * 0.57, Math.sin(angle) * 0.57, 0.04)
+    separator.rotation.z = angle - Math.PI / 2
+    board.add(separator)
+  })
+
+  const outerBull = new THREE.Mesh(new THREE.CircleGeometry(0.14, 64), greenBand)
+  outerBull.position.z = 0.045
+  const innerBull = new THREE.Mesh(new THREE.CircleGeometry(0.06, 48), redBand)
+  innerBull.position.z = 0.055
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(1.04, 0.045, 12, 160), rimMaterial)
+  rim.position.z = 0.025
+  board.add(outerBull, innerBull, rim)
+  return board
+}
+
+function createBoardSector(
+  innerRadius: number,
+  outerRadius: number,
+  startAngle: number,
+  endAngle: number,
+  material: THREE.Material,
+  z: number,
+): THREE.Mesh {
+  const shape = new THREE.Shape()
+  shape.absarc(0, 0, outerRadius, startAngle, endAngle, false)
+  shape.lineTo(Math.cos(endAngle) * innerRadius, Math.sin(endAngle) * innerRadius)
+  shape.absarc(0, 0, innerRadius, endAngle, startAngle, true)
+  shape.closePath()
+  const sector = new THREE.Mesh(new THREE.ShapeGeometry(shape, 8), material)
+  sector.position.z = z
+  return sector
+}
+
+function createNumberLabel(number: number): THREE.Sprite {
+  const canvas = document.createElement('canvas')
+  canvas.width = 96
+  canvas.height = 96
+  const context = canvas.getContext('2d')
+
+  if (context) {
+    context.clearRect(0, 0, canvas.width, canvas.height)
+    context.fillStyle = '#f7f0df'
+    context.font = '700 46px Inter, Arial, sans-serif'
+    context.textAlign = 'center'
+    context.textBaseline = 'middle'
+    context.fillText(String(number), canvas.width / 2, canvas.height / 2)
   }
 
-  const rim = new THREE.Mesh(
-    new THREE.TorusGeometry(1.6, 0.045, 12, 96),
-    new THREE.MeshStandardMaterial({ color: 0x16242d, roughness: 0.45 }),
-  )
-  board.add(rim)
-  return board
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.colorSpace = THREE.SRGBColorSpace
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }))
+  sprite.scale.set(0.22, 0.22, 1)
+  return sprite
 }
 
 function createDartMesh(): THREE.Group {
