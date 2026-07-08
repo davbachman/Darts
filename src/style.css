@@ -155,13 +155,16 @@ p {
 .game-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 350px;
+  height: 100vh;
   min-height: 100vh;
+  overflow: hidden;
   background: #1b120d;
 }
 
 .game-stage {
   position: relative;
-  min-height: 100vh;
+  min-height: 0;
+  height: 100%;
   overflow: hidden;
   background:
     linear-gradient(90deg, rgba(20, 13, 9, 0.2), rgba(20, 13, 9, 0.02) 45%, rgba(20, 13, 9, 0.36)),
@@ -179,9 +182,11 @@ p {
 
 .hud-panel {
   display: flex;
+  min-height: 0;
   padding: 28px;
   flex-direction: column;
   gap: 20px;
+  overflow-y: auto;
   color: #f6eed8;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 28%),
@@ -438,6 +443,11 @@ p {
     grid-template-columns: 1fr;
   }
 
+  .game-shell {
+    height: auto;
+    overflow: visible;
+  }
+
   .menu-shell {
     padding: 28px;
   }
@@ -457,6 +467,7 @@ p {
   }
 
   .game-stage {
+    height: auto;
     min-height: 62vh;
   }
 }

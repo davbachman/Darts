@@ -49,6 +49,8 @@ export class DartsGame {
   private readonly tracker = new ThrowGestureTracker()
   private readonly scene = new THREE.Scene()
   private readonly camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100)
+  private readonly resizeObserver =
+    typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => this.resize())
   private readonly renderer = new THREE.WebGLRenderer({
     antialias: true,
     alpha: false,
@@ -88,6 +90,7 @@ export class DartsGame {
     applyReadyDartRotation(this.readyDart, { x: 0, y: 0 })
     this.scene.add(this.readyDart)
     this.resize()
+    this.resizeObserver?.observe(this.host)
   }
 
   async start(): Promise<void> {
@@ -143,6 +146,7 @@ export class DartsGame {
   }
 
   dispose(): void {
+    this.resizeObserver?.disconnect()
     this.provider.stop()
     this.sounds.dispose()
     this.renderer.dispose()
@@ -446,29 +450,31 @@ function createDartMesh(): THREE.Group {
   return group
 }
 
-function createTailFin(angle: number, material: THREE.Material): THREE.Mesh {
+export interface DartTailFinVertex {
+  x: number
+  y: number
+  z: number
+}
+
+export function dartTailFinVertices(angle: number): DartTailFinVertex[] {
   const radial = new THREE.Vector2(Math.cos(angle), Math.sin(angle))
-  const tangent = new THREE.Vector2(-Math.sin(angle), Math.cos(angle))
   const rootRadius = 0.018
-  const outerRadius = 0.17
-  const rootHalfWidth = 0.012
-  const outerHalfWidth = 0.04
+  const leadingOuterRadius = 0.17
+  const trailingOuterRadius = 0.14
   const zStart = 0.28
+  const zLeading = 0.36
   const zEnd = 0.66
-  const positions = [
-    radial.x * rootRadius + tangent.x * rootHalfWidth,
-    radial.y * rootRadius + tangent.y * rootHalfWidth,
-    zStart,
-    radial.x * rootRadius - tangent.x * rootHalfWidth,
-    radial.y * rootRadius - tangent.y * rootHalfWidth,
-    zStart,
-    radial.x * outerRadius - tangent.x * outerHalfWidth,
-    radial.y * outerRadius - tangent.y * outerHalfWidth,
-    zEnd,
-    radial.x * outerRadius + tangent.x * outerHalfWidth,
-    radial.y * outerRadius + tangent.y * outerHalfWidth,
-    zEnd,
+
+  return [
+    { x: radial.x * rootRadius, y: radial.y * rootRadius, z: zStart },
+    { x: radial.x * leadingOuterRadius, y: radial.y * leadingOuterRadius, z: zLeading },
+    { x: radial.x * trailingOuterRadius, y: radial.y * trailingOuterRadius, z: zEnd },
+    { x: radial.x * rootRadius, y: radial.y * rootRadius, z: zEnd },
   ]
+}
+
+function createTailFin(angle: number, material: THREE.Material): THREE.Mesh {
+  const positions = dartTailFinVertices(angle).flatMap((vertex) => [vertex.x, vertex.y, vertex.z])
   const geometry = new THREE.BufferGeometry()
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
   geometry.setIndex([0, 1, 2, 0, 2, 3])

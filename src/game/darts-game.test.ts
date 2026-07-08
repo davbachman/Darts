@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   dartboardVisualScale,
+  dartTailFinVertices,
   readyDartPosition,
   shouldClearLandedObjectsAfterTurn,
   shouldShowReadyDart,
@@ -43,5 +44,20 @@ describe('ready dart visibility and placement', () => {
     expect(position.x).toBeCloseTo(0.23, 2)
     expect(position.y).toBeCloseTo(0.082, 3)
     expect(position.z).toBeGreaterThan(0)
+  })
+})
+
+describe('dart tail fins', () => {
+  it('places each fin flat in a radial plane around the dart axis', () => {
+    const angle = Math.PI / 4
+    const tangent = { x: -Math.sin(angle), y: Math.cos(angle) }
+    const vertices = dartTailFinVertices(angle)
+    const tangentOffsets = vertices.map((vertex) => vertex.x * tangent.x + vertex.y * tangent.y)
+    const radialDistances = vertices.map((vertex) => vertex.x * Math.cos(angle) + vertex.y * Math.sin(angle))
+    const zValues = vertices.map((vertex) => vertex.z)
+
+    tangentOffsets.forEach((offset) => expect(offset).toBeCloseTo(0, 6))
+    expect(Math.max(...radialDistances) - Math.min(...radialDistances)).toBeGreaterThan(0.1)
+    expect(Math.max(...zValues) - Math.min(...zValues)).toBeGreaterThan(0.2)
   })
 })
