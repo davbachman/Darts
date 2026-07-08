@@ -154,7 +154,7 @@ p {
 
 .game-shell {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 350px;
+  grid-template-columns: minmax(0, 1fr) 390px;
   height: 100vh;
   min-height: 100vh;
   overflow: hidden;
@@ -181,161 +181,345 @@ p {
 }
 
 .hud-panel {
-  display: flex;
+  position: relative;
+  display: block;
   min-height: 0;
-  padding: 28px;
-  flex-direction: column;
-  gap: 20px;
+  padding: 22px;
   overflow-y: auto;
   color: #f6eed8;
   background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 28%),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 22px),
-    #10251f;
-  border-left: 10px solid #5a351f;
+    radial-gradient(circle at 20% 16%, rgba(255, 255, 255, 0.08), transparent 18%),
+    radial-gradient(circle at 76% 44%, rgba(255, 255, 255, 0.055), transparent 22%),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.018) 1px, transparent 1px, transparent 20px),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 32%),
+    #11291f;
+  border-left: 12px solid #4c2d1a;
   box-shadow:
-    inset 0 0 42px rgba(0, 0, 0, 0.56),
+    inset 0 0 70px rgba(0, 0, 0, 0.62),
     -12px 0 30px rgba(0, 0, 0, 0.32);
+}
+
+.pub-scoreboard::before {
+  content: "";
+  position: absolute;
+  inset: 16px;
+  border: 2px solid rgba(241, 239, 222, 0.78);
+  box-shadow:
+    inset 0 0 0 3px rgba(17, 41, 31, 0.86),
+    inset 0 0 0 5px rgba(241, 239, 222, 0.36);
+  pointer-events: none;
+}
+
+.pub-scoreboard::after {
+  content: "";
+  position: absolute;
+  inset: 28px;
+  border-top: 1px solid rgba(241, 239, 222, 0.28);
+  border-bottom: 1px solid rgba(241, 239, 222, 0.22);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.chalk-board-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-height: calc(100vh - 44px);
+  padding: 20px 18px 46px;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.chalk-screw {
+  position: absolute;
+  z-index: 2;
+  width: 11px;
+  height: 11px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 36% 30%, #eee7cf 0 12%, #8f856e 42%, #2f2c25 72%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.68);
+}
+
+.chalk-screw-top-left {
+  top: 18px;
+  left: 18px;
+}
+
+.chalk-screw-top-right {
+  top: 18px;
+  right: 18px;
+}
+
+.chalk-screw-bottom-left {
+  bottom: 18px;
+  left: 18px;
+}
+
+.chalk-screw-bottom-right {
+  right: 18px;
+  bottom: 18px;
+}
+
+.chalk-ledge {
+  position: absolute;
+  right: 54px;
+  bottom: 13px;
+  left: 54px;
+  z-index: 2;
+  height: 8px;
+  border-radius: 8px;
+  background: #d7d0bc;
+  box-shadow:
+    inset 0 -2px 0 rgba(0, 0, 0, 0.22),
+    0 2px 5px rgba(0, 0, 0, 0.34);
 }
 
 .hud-panel h1 {
   margin: 0;
   color: #fff7df;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: Chalkduster, "Marker Felt", "Bradley Hand", "Courier New", cursive;
   font-size: 2.15rem;
   line-height: 1.05;
   letter-spacing: 0;
-}
-
-.hud-stat {
-  display: grid;
-  padding: 16px 0 18px;
-  gap: 8px;
-  border-top: 2px solid rgba(246, 238, 216, 0.58);
-  border-bottom: 2px solid rgba(246, 238, 216, 0.58);
-}
-
-.hud-stat span,
-.hud-status {
-  color: #d5c8a9;
-  font-family: "Courier New", monospace;
-}
-
-.hud-stat strong {
-  color: #fff7df;
-  font-family: "Courier New", monospace;
-  font-size: 3.2rem;
-  line-height: 1;
-  text-shadow: 0 0 1px rgba(255, 255, 255, 0.6);
+  text-align: center;
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.52);
 }
 
 .hud-mode-details {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
-.player-scoreboard {
+.pub-score-sheet {
   display: grid;
-  gap: 8px;
+  gap: 12px;
+  color: rgba(249, 247, 231, 0.92);
+  font-family: Chalkduster, "Marker Felt", "Bradley Hand", "Courier New", cursive;
+  text-shadow:
+    0 0 1px rgba(255, 255, 255, 0.54),
+    0 0 8px rgba(255, 255, 255, 0.08);
 }
 
-.player-scoreboard div {
+.pub-names-line,
+.pub-title-line {
   display: flex;
-  min-height: 44px;
-  padding: 0 10px;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px dashed rgba(246, 238, 216, 0.32);
-  color: #d5c8a9;
-  font-family: "Courier New", monospace;
-}
-
-.player-scoreboard .active {
-  color: #fff7df;
-  background: rgba(232, 196, 109, 0.14);
-}
-
-.player-scoreboard strong {
-  font-size: 1.35rem;
-}
-
-.hud-mode-details p {
-  margin: 0;
-  color: #d5c8a9;
-  font-family: "Courier New", monospace;
+  gap: 10px;
+  color: rgba(249, 247, 231, 0.78);
   font-size: 0.9rem;
+  line-height: 1.1;
 }
 
-.cricket-board {
+.pub-names-line strong,
+.pub-title-line strong {
+  color: #fff7df;
+  white-space: nowrap;
+}
+
+.pub-title-line {
+  padding: 6px 0 7px;
+  border-top: 2px solid rgba(249, 247, 231, 0.54);
+  border-bottom: 2px solid rgba(249, 247, 231, 0.54);
+  color: #fff7df;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.1rem;
+}
+
+.cricket-ledger {
   display: grid;
-  gap: 2px;
-  padding: 8px 0;
-  border-top: 2px solid rgba(246, 238, 216, 0.58);
-  border-bottom: 2px solid rgba(246, 238, 216, 0.58);
-  font-family: "Courier New", monospace;
+  grid-template-columns: minmax(82px, 1fr) 74px minmax(82px, 1fr);
+  min-height: 296px;
+  border-top: 1px solid rgba(249, 247, 231, 0.62);
+  border-bottom: 1px solid rgba(249, 247, 231, 0.62);
 }
 
-.cricket-row {
+.cricket-mark-column,
+.cricket-target-column {
   display: grid;
-  grid-template-columns: 1fr 56px 56px;
-  min-height: 30px;
-  align-items: center;
-  border-bottom: 1px dashed rgba(246, 238, 216, 0.24);
+  grid-template-rows: repeat(7, minmax(38px, 1fr));
 }
 
-.cricket-row:last-child {
+.cricket-mark-column {
+  border-right: 1px solid rgba(249, 247, 231, 0.38);
+}
+
+.cricket-target-column {
+  border-right: 2px solid rgba(249, 247, 231, 0.7);
+  border-left: 2px solid rgba(249, 247, 231, 0.7);
+}
+
+.cricket-mark-column + .cricket-target-column + .cricket-mark-column {
+  border-right: 0;
+  border-left: 1px solid rgba(249, 247, 231, 0.38);
+}
+
+.cricket-mark-column > span,
+.cricket-target-column > strong {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  place-items: center;
+  border-bottom: 1px solid rgba(249, 247, 231, 0.2);
+}
+
+.cricket-mark-column > span:last-child,
+.cricket-target-column > strong:last-child {
   border-bottom: 0;
 }
 
-.cricket-row strong {
-  color: #e8c46d;
-}
-
-.cricket-row span {
+.cricket-target-column > strong {
   color: #fff7df;
-  text-align: center;
-  font-size: 1.15rem;
-  font-weight: 800;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.55rem;
+  font-weight: 700;
 }
 
-.cricket-head span {
-  color: #d5c8a9;
-  font-size: 0.78rem;
+.cricket-target-column > strong:last-child {
+  font-size: 1rem;
+}
+
+.chalk-cricket-mark {
+  position: relative;
+  display: block;
+  width: 52px;
+  height: 34px;
+}
+
+.mark-line,
+.mark-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  opacity: 0.78;
+  filter: blur(0.15px);
+}
+
+.mark-line {
+  width: 42px;
+  height: 3px;
+  border-radius: 999px;
+  background: rgba(244, 241, 222, 0.84);
+  transform-origin: center;
+}
+
+.mark-forward {
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.mark-back {
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.mark-ring {
+  width: 38px;
+  height: 28px;
+  border: 3px solid rgba(244, 241, 222, 0.78);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) rotate(-10deg);
+}
+
+.pub-score-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 2px solid rgba(249, 247, 231, 0.6);
+  border-bottom: 2px solid rgba(249, 247, 231, 0.6);
+}
+
+.practice-score-sheet .pub-score-columns {
+  grid-template-columns: 1fr;
+}
+
+.pub-score-column,
+.practice-total {
+  display: grid;
+  min-height: 174px;
+  padding: 16px 8px;
+  align-content: center;
+  justify-items: center;
+  gap: 8px;
+  border-right: 1px solid rgba(249, 247, 231, 0.42);
+  color: rgba(249, 247, 231, 0.76);
+  text-align: center;
+}
+
+.pub-score-column:last-child {
+  border-right: 0;
+}
+
+.pub-score-column.active {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.pub-player-name,
+.practice-total span,
+.pub-score-column span:last-child {
+  font-size: 0.8rem;
+}
+
+.pub-score-column strong,
+.practice-total strong {
+  color: #fff7df;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.chalk-note,
+.hud-status,
+.chalk-section-label {
+  margin: 0;
+  color: rgba(249, 247, 231, 0.72);
+  font-family: Chalkduster, "Marker Felt", "Bradley Hand", "Courier New", cursive;
+}
+
+.chalk-note {
+  min-height: 21px;
+  padding-top: 4px;
+  border-top: 1px dashed rgba(249, 247, 231, 0.24);
+  font-size: 0.86rem;
 }
 
 .throw-slots {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 8px;
 }
 
-.throw-slots span {
+.turn-ledger {
   display: grid;
-  height: 54px;
+  gap: 7px;
+  padding-top: 2px;
+}
+
+.chalk-section-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.turn-slot {
+  display: grid;
+  height: 44px;
   place-items: center;
-  border: 1px solid rgba(246, 238, 216, 0.2);
-  border-radius: 8px;
-  color: #d5c8a9;
-  background: rgba(255, 255, 255, 0.05);
-  font-family: "Courier New", monospace;
+  border: 1px solid rgba(249, 247, 231, 0.38);
+  color: rgba(249, 247, 231, 0.78);
+  background: rgba(255, 255, 255, 0.025);
+  font-family: Chalkduster, "Marker Felt", "Bradley Hand", "Courier New", cursive;
   font-weight: 800;
 }
 
-.throw-slots .filled {
-  color: #24150d;
-  background: #e8c46d;
+.turn-slot.filled {
+  color: #fff7df;
+  background: rgba(255, 255, 255, 0.07);
 }
 
 .hud-status {
   min-height: 24px;
-  margin: 0;
-}
-
-.hud-help {
-  margin: 0;
-  color: #bbae8e;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(249, 247, 231, 0.25);
   font-size: 0.86rem;
-  line-height: 1.5;
 }
 
 .impact-pop {
@@ -426,15 +610,20 @@ p {
   display: grid;
   gap: 10px;
   margin-top: auto;
+  padding-bottom: 12px;
 }
 
 .hud-actions button {
-  color: #24150d;
-  background: #d5c8a9;
+  min-height: 38px;
+  border: 1px solid rgba(249, 247, 231, 0.44);
+  color: #fff7df;
+  background: rgba(255, 255, 255, 0.08);
+  font-family: Chalkduster, "Marker Felt", "Bradley Hand", "Courier New", cursive;
+  box-shadow: none;
 }
 
 .hud-actions button:first-child {
-  background: #e8c46d;
+  background: rgba(232, 196, 109, 0.18);
 }
 
 @media (max-width: 980px) {
@@ -464,6 +653,10 @@ p {
     min-height: auto;
     border-left: 0;
     border-top: 10px solid #5a351f;
+  }
+
+  .chalk-board-inner {
+    min-height: auto;
   }
 
   .game-stage {
@@ -497,7 +690,29 @@ p {
     font-size: 2.65rem;
   }
 
-  .cricket-row {
-    grid-template-columns: 1fr 48px 48px;
+  .hud-panel {
+    padding: 18px;
+  }
+
+  .chalk-board-inner {
+    padding: 18px 14px 42px;
+  }
+
+  .cricket-ledger {
+    grid-template-columns: minmax(70px, 1fr) 62px minmax(70px, 1fr);
+  }
+
+  .chalk-cricket-mark {
+    width: 42px;
+    height: 30px;
+  }
+
+  .mark-line {
+    width: 34px;
+  }
+
+  .mark-ring {
+    width: 32px;
+    height: 24px;
   }
 }

@@ -1,11 +1,9 @@
 import { DartsGame } from './game/darts-game'
-import { cricketTargets, dartsGameModes, targetLabel, type DartsGameMode } from './game/dart-modes'
-import { formatDartHit } from './game/scoring'
+import { dartsGameModes, type DartsGameMode } from './game/dart-modes'
 import { createDefaultHandProvider } from './input/hand-provider'
+import { renderPubScoreboard, renderTurnSlots } from './scoreboard'
 
 type ScreenMode = 'menu' | 'darts'
-
-const dartsInstructions = 'Pinch thumb and index to grab a dart, push toward the screen, then unpinch to throw.'
 
 export class HandThrowApp {
   private readonly root: HTMLElement
@@ -13,7 +11,6 @@ export class HandThrowApp {
   private game: DartsGame | null = null
   private lastTimestamp = 0
   private running = false
-  private hudScore: HTMLElement | null = null
   private hudStatus: HTMLElement | null = null
   private hudThrows: HTMLElement | null = null
   private hudModeDetails: HTMLElement | null = null
@@ -98,28 +95,30 @@ export class HandThrowApp {
             </div>
           </div>
         </section>
-        <aside class="hud-panel" aria-label="Darts score">
-          <div>
+        <aside class="hud-panel pub-scoreboard" aria-label="Darts pub chalkboard score">
+          <span class="chalk-screw chalk-screw-top-left" aria-hidden="true"></span>
+          <span class="chalk-screw chalk-screw-top-right" aria-hidden="true"></span>
+          <span class="chalk-screw chalk-screw-bottom-left" aria-hidden="true"></span>
+          <span class="chalk-screw chalk-screw-bottom-right" aria-hidden="true"></span>
+          <div class="chalk-board-inner">
             <p class="eyebrow">Darts</p>
             <h1>${modeLabel}</h1>
+            <div class="hud-mode-details" id="hud-mode-details"></div>
+            <div class="turn-ledger">
+              <p class="chalk-section-label">This turn</p>
+              <div class="throw-slots" id="hud-throws" aria-label="Throw slots"></div>
+            </div>
+            <p class="hud-status" id="hud-status">Starting camera</p>
+            <div class="hud-actions">
+              <button id="replay-round" type="button">Replay</button>
+              <button id="back-menu" type="button">Menu</button>
+            </div>
           </div>
-          <div class="hud-stat">
-            <span>Score</span>
-            <strong id="hud-score">0</strong>
-          </div>
-          <div class="hud-mode-details" id="hud-mode-details"></div>
-          <div class="throw-slots" id="hud-throws" aria-label="Throw slots"></div>
-          <p class="hud-status" id="hud-status">Starting camera</p>
-          <p class="hud-help">${dartsInstructions}</p>
-          <div class="hud-actions">
-            <button id="replay-round" type="button">Replay</button>
-            <button id="back-menu" type="button">Menu</button>
-          </div>
+          <span class="chalk-ledge" aria-hidden="true"></span>
         </aside>
       </main>
     `
 
-    this.hudScore = this.root.querySelector('#hud-score')
     this.hudStatus = this.root.querySelector('#hud-status')
     this.hudThrows = this.root.querySelector('#hud-throws')
     this.hudModeDetails = this.root.querySelector('#hud-mode-details')
@@ -180,24 +179,16 @@ export class HandThrowApp {
       return
     }
 
-    if (this.hudScore) {
-      this.hudScore.textContent = state.dartsMode ? this.primaryScore(state.dartsMode) : String(state.round.totalScore)
-    }
-
     if (this.hudStatus) {
       this.hudStatus.textContent = state.providerMessage
     }
 
-    if (this.hudThrows) {
-      const throws = state.dartsMode?.currentTurn ?? state.round.throws.map((dartThrow) => dartThrow.score)
-      this.hudThrows.innerHTML = Array.from({ length: state.round.maxThrows }, (_, index) => {
-        const dartThrow = throws[index]
-        return `<span class="${dartThrow ? 'filled' : ''}">${dartThrow ? formatDartHit(dartThrow) : '-'}</span>`
-      }).join('')
+    if (this.hudThrows && state.dartsMode) {
+      this.hudThrows.innerHTML = renderTurnSlots(state.dartsMode)
     }
 
     if (this.hudModeDetails && state.dartsMode) {
-      this.hudModeDetails.innerHTML = this.modeDetails(state.dartsMode)
+      this.hudModeDetails.innerHTML = renderPubScoreboard(state.dartsMode)
     }
 
     if (this.roundOverlay) {
@@ -221,77 +212,6 @@ export class HandThrowApp {
         this.update(stepMs, this.lastTimestamp)
       }
     }
-  }
-
-  private modeDetails(mode: NonNullable<ReturnType<DartsGame['getTextState']>['dartsMode']>): string {
-    if (mode.mode === 'cricket') {
-      const rows = cricketTargets
-        .map((target) => {
-          const label = target === 'bull' ? 'B' : String(target)
-          const playerMarks = mode.players
-            .map((player) => `<span>${this.cricketMarks(player.cricket.marks[target])}</span>`)
-            .join('')
-          return `<div class="cricket-row"><strong>${label}</strong>${playerMarks}</div>`
-        })
-        .join('')
-      const scores = mode.players
-        .map((player, index) => `<div class="${index === mode.activePlayer && mode.status === 'active' ? 'active' : ''}"><span>${player.name}</span><strong>${player.score}</strong></div>`)
-        .join('')
-
-      return `
-        <div class="cricket-board">
-          <div class="cricket-row cricket-head"><strong></strong><span>P1</span><span>P2</span></div>
-          ${rows}
-        </div>
-        <div class="player-scoreboard">${scores}</div>
-        ${mode.lastEvent ? `<p>${mode.lastEvent}</p>` : ''}
-      `
-    }
-
-    const players = mode.players
-      .map((player, index) => {
-        const active = index === mode.activePlayer && mode.status === 'active'
-        const value =
-          mode.mode === '301'
-            ? player.remaining
-            : mode.mode === 'around-the-clock'
-              ? targetLabel(player.clockTarget)
-              : player.score
-        return `<div class="${active ? 'active' : ''}"><span>${player.name}</span><strong>${value}</strong></div>`
-      })
-      .join('')
-
-    return `<div class="player-scoreboard">${players}</div>${mode.lastEvent ? `<p>${mode.lastEvent}</p>` : ''}`
-  }
-
-  private cricketMarks(count: number): string {
-    if (count >= 3) {
-      return 'X'
-    }
-
-    if (count === 2) {
-      return '/'
-    }
-
-    if (count === 1) {
-      return '-'
-    }
-
-    return ''
-  }
-
-  private primaryScore(mode: NonNullable<ReturnType<DartsGame['getTextState']>['dartsMode']>): string {
-    const active = mode.players[mode.activePlayer]
-
-    if (mode.mode === '301') {
-      return String(active.remaining)
-    }
-
-    if (mode.mode === 'around-the-clock') {
-      return targetLabel(active.clockTarget)
-    }
-
-    return String(active.score)
   }
 
   private completionText(mode: NonNullable<ReturnType<DartsGame['getTextState']>['dartsMode']>): string {

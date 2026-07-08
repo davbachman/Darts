@@ -1,5 +1,6 @@
 import { FilesetResolver, HandLandmarker, type HandLandmarkerResult } from '@mediapipe/tasks-vision'
 import { createHandFrameFromLandmarks, type HandFrame, type HandLandmark } from './gesture'
+import { publicAssetPath } from '../asset-paths'
 
 export type HandProviderStatus = 'idle' | 'requesting-camera' | 'loading-model' | 'ready' | 'tracking' | 'error'
 
@@ -11,8 +12,8 @@ export interface HandInputProvider {
   stop(): void
 }
 
-const wasmPath = '/mediapipe/wasm'
-const modelPath = '/mediapipe/models/hand_landmarker.task'
+const wasmPath = publicAssetPath('mediapipe/wasm')
+const modelPath = publicAssetPath('mediapipe/models/hand_landmarker.task')
 
 export class MediaPipeHandInputProvider implements HandInputProvider {
   private video: HTMLVideoElement

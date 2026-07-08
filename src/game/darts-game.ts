@@ -7,6 +7,7 @@ import { dartboardNumbers, formatDartScore, scoreDartImpact } from './scoring'
 import { GameSounds } from './sound'
 import { type HandInputProvider } from '../input/hand-provider'
 import { ThrowGestureTracker, type ThrowInputSnapshot } from '../input/gesture'
+import { publicAssetPath } from '../asset-paths'
 
 interface ActiveFlight {
   start: THREE.Vector3
@@ -186,7 +187,7 @@ export class DartsGame {
   }
 
   private loadPubBackground(): void {
-    new THREE.TextureLoader().load('/assets/pub-dart-lane.png', (texture) => {
+    new THREE.TextureLoader().load(publicAssetPath('assets/pub-dart-lane.png'), (texture) => {
       texture.colorSpace = THREE.SRGBColorSpace
       this.scene.background = texture
       this.render()
